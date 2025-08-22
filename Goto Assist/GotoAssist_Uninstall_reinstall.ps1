@@ -15,6 +15,24 @@ $msiProductCodes = @(
     # Add more MSI product codes here as needed
 )
 
+# Configuration for Executable-based uninstallers
+$exeUninstallers = @(
+    @{
+        Description = "GoToAssist Unattended Remover"
+        SearchPath  = "C:\Program Files (x86)\GoToAssist Remote Support Unattended"
+        FileName    = "GoToAssistUnattendedRemover.exe"
+        Arguments   = "/s"
+    }
+    # Add more executable uninstallers here in the future. For example:
+    # @{
+    #     Description = "Another Program Uninstaller"
+    #     SearchPath  = "C:\Program Files\Another Program"
+    #     FileName    = "uninstaller.exe"
+    #     Arguments   = "/silent /norestart"
+    # }
+)
+
+
 # Configuration for GoToAssist (manual cleanup)
 $goToAssistAppName = "GoToAssist Customer 4.8.0.1732" # DisplayName from registry
 $goToAssistRegistryPath = "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
@@ -35,6 +53,8 @@ $goToAssistProcessNames = @(
     "GoToAssistLoggerProcess", # This is the main culprit from logs
     "GoToAssistNetworkChecker",
     "GoToAssistProcessChecker",
+    "GoToAssist Remote Support (32 bit)",
+    "GoToAssistCrashHandler (32 bit)",
     "GoToAssistCrashHandler"
 )
 $goToAssistServiceNames = @(
@@ -128,11 +148,53 @@ foreach ($productCode in $msiProductCodes) {
         Write-Log "MSI product $productCode is not installed (or registry entry not found), skipping uninstallation."
     }
 }
-Start-Process -FilePath "msiexec.exe" -ArgumentList "/x {39D79B86-76F6-0D2A-DF9C-360F90872AA4} /qn" -Wait -NoNewWindow
-Start-Process -FilePath "msiexec.exe" -ArgumentList "/x {2A361CF9-8DC2-BC95-4BBA-108B5074A50A} /qn" -Wait -NoNewWindow
-Start-Process -FilePath "msiexec.exe" -ArgumentList "/x {3A322358-03A6-2C23-1C0D-67382D9B35A7} /qn" -Wait -NoNewWindow
-
 # --- End of MSI-Based Uninstalls ---
+
+
+# --- Section 1.5: Executable-Based Uninstalls ---
+Write-Host "`n--- Running Executable-Based Uninstalls ---"
+Write-Log "Running Executable-Based Uninstalls."
+
+foreach ($uninstaller in $exeUninstallers) {
+    Write-Host "Handling uninstaller: $($uninstaller.Description)..."
+    Write-Log "Handling uninstaller: $($uninstaller.Description)..."
+
+    $uninstallerPath = $null
+    # Check if the base search path exists
+    if (Test-Path $uninstaller.SearchPath) {
+        # Find the executable file within the search path and its subdirectories
+        $uninstallerPath = Get-ChildItem -Path $uninstaller.SearchPath -Filter $uninstaller.FileName -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+    } else {
+        Write-Host "Search path '$($uninstaller.SearchPath)' not found. Skipping."
+        Write-Log "Search path '$($uninstaller.SearchPath)' not found. Skipping."
+        continue # Move to the next uninstaller in the list
+    }
+
+    if ($uninstallerPath) {
+        Write-Host "Found uninstaller at: '$($uninstallerPath.FullName)'. Attempting to run."
+        Write-Log "Found uninstaller at: '$($uninstallerPath.FullName)'. Attempting to run."
+        try {
+            $results = Start-Process -FilePath $uninstallerPath.FullName -ArgumentList $uninstaller.Arguments -Wait -Passthru -WindowStyle Hidden -ErrorAction Stop
+            if ($results.exitcode -eq 0) {
+                Write-Host "Successfully ran uninstaller '$($uninstaller.Description)'."
+                Write-Log "Successfully ran uninstaller '$($uninstaller.Description)'."
+            } else {
+                Write-Warning "Uninstaller '$($uninstaller.Description)' finished with a non-zero exit code: $($results.exitcode)."
+                Write-Log "WARNING: Uninstaller '$($uninstaller.Description)' finished with a non-zero exit code: $($results.exitcode)." "WARNING"
+            }
+        }
+        catch {
+            $exceptionMessage = $_.Exception.Message
+            $errorOutput = "An error occurred while trying to run uninstaller '$($uninstaller.Description)': $exceptionMessage"
+            Write-Error $errorOutput
+            Write-Log $errorOutput "ERROR"
+        }
+    } else {
+        Write-Host "Uninstaller file '$($uninstaller.FileName)' not found in path '$($uninstaller.SearchPath)'. Skipping."
+        Write-Log "Uninstaller file '$($uninstaller.FileName)' not found in path '$($uninstaller.SearchPath)'. Skipping."
+    }
+}
+# --- End of Executable-Based Uninstalls ---
 
 
 # --- Section 2: Manual Cleanup for GoToAssist ---
