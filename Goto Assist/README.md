@@ -73,6 +73,6 @@ $newMsiFileName: The filename of the new MSI installer. This must match the file
 
 > [!WARNING]
 > This script is designed to be destructive and forcefully removes files and registry entries. It is highly effective but should be used with caution.  
-> Test First: Always test the script in a controlled environment or on a non-critical machine before deploying it to production systems.  
-> Review Configuration: Ensure the product codes, application names, and folder paths in the configuration section match the versions you are targeting.  
-> No Warranty: This script is provided as-is. The author is not responsible for any data loss or system instability that may result from its use.  
+> **Test First:** Always test the script in a controlled environment or on a non-critical machine before deploying it to production systems.  
+> **Review Configuration:** Ensure the product codes, application names, and folder paths in the configuration section match the versions you are targeting.  
+> **No Warranty:** This script is provided as-is. The author is not responsible for any data loss or system instability that may result from its use.  
