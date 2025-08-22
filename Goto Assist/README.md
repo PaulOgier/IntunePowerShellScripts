@@ -64,7 +64,7 @@ $logFile: The full path for the output log file.
 
 $skipFile: The full path for the skip-file that prevents the script from running again.
 
-$msiProductCodes: A list of MSI product codes for older versions you want to target for uninstallation.
+$msiProductCodes: A list of MSI product codes for older versions you want to target for uninstallation. If you want to get other product codes for your situation, please either check the registy or uninstallview from https://www.nirsoft.net/utils/uninstall_view.html
 
 $goToAssistAppName, $goToAssistRegistryPath, etc.: Variables that define the specific names, registry keys, and folder paths for the manual cleanup process.
 
