@@ -28,15 +28,16 @@ Creates a comprehensive log file at C:\Intel\Install\UninstallLog.txt that recor
 
 ## Safety Skip-File:
 Creates a file (C:\Intel\Install\Goto_V2.txt) upon successful installation to prevent the script from running again on the same machine.
+This is a location that most Windows machines have and has no permission issues. You can update this to be whatever you want.
 
 ## Prerequisites
 Windows OS: The script is designed for Windows environments.
 
 Administrator Privileges: The script must be run with Administrator privileges to stop services, modify the registry, and delete system files.
 
-From Intune it should be run from "Install behavior System"
+From Intune it should be run from "Install behavior - System"
 
-New MSI Installer: A new GoTo Assist MSI installer file (e.g., GoToAssist_Remote_Support_Unattended.msi) must be placed in the same directory as the PowerShell script.
+New MSI Installer: A new GoTo Assist MSI installer file (e.g., GoToAssist_Remote_Support_Unattended.msi) must be placed in the same directory as the PowerShell script and called exactly the same, otherwise it will not work in the script.
 
 ### How to Use
 Prepare the Files:
